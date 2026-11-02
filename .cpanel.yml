@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export 
+DEPLOYPATH=/home/ybtzxyhi/plsofttechwebsite.plsofttech.com/
+    - /bin/cp -R * $DEPLOYPATH
