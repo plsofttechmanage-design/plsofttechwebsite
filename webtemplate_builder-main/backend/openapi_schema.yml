@@ -1,0 +1,5191 @@
+openapi: 3.0.3
+info:
+  title: Website Template Marketplace API
+  version: 1.0.0
+  description: WordPress-inspired Website Template Marketplace & Builder REST API.
+    Allows administrators to manage templates, categories, and customers, and customers
+    to browse, customize, purchase, and securely download templates.
+paths:
+  /api/audit/admin/logs/:
+    get:
+      operationId: audit_admin_logs_list
+      description: |-
+        Administrative audit trail viewer.
+        Filters by action, entity_type, user, and date range.
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+      - in: query
+        name: entity_type
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: user
+        schema:
+          type: integer
+      tags:
+      - audit
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditLogList'
+          description: ''
+  /api/auth/admin/users/:
+    get:
+      operationId: auth_admin_users_list
+      description: Admin endpoint to view, search, and filter customer accounts.
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - in: query
+        name: is_verified
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - ADMIN
+          - CUSTOMER
+        description: |-
+          * `ADMIN` - Administrator
+          * `CUSTOMER` - Customer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminUserList'
+          description: ''
+  /api/auth/admin/users/{id}/:
+    get:
+      operationId: auth_admin_users_retrieve
+      description: Admin endpoint to view, deactivate, or update customer account
+        status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+    put:
+      operationId: auth_admin_users_update
+      description: Admin endpoint to view, deactivate, or update customer account
+        status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+    patch:
+      operationId: auth_admin_users_partial_update
+      description: Admin endpoint to view, deactivate, or update customer account
+        status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminUserRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+          description: ''
+    delete:
+      operationId: auth_admin_users_destroy
+      description: Admin endpoint to view, deactivate, or update customer account
+        status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/change-password/:
+    post:
+      operationId: auth_change_password_create
+      description: Allows authenticated users to change their account password.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        User login endpoint. Returns JWT tokens along with user information.
+        Rate limited to 30 attempts per minute to mitigate brute-force attacks.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Secure logout endpoint that blacklists the JWT refresh token on
+        the server.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/password-reset/:
+    post:
+      operationId: auth_password_reset_create
+      description: |-
+        Initiates account recovery by generating a secure single-use token.
+        Rate limited to prevent email enumeration or flooding.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/password-reset-confirm/:
+    post:
+      operationId: auth_password_reset_confirm_create
+      description: Validates password reset token and updates the user password securely.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      description: Retrieve and update authenticated user's own profile.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: auth_profile_update
+      description: Retrieve and update authenticated user's own profile.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileUpdate'
+          description: ''
+    patch:
+      operationId: auth_profile_partial_update
+      description: Retrieve and update authenticated user's own profile.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileUpdate'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Customer registration endpoint with rate limiting.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegistration'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/cart/:
+    get:
+      operationId: cart_retrieve
+      description: |-
+        Get customer cart, add item to cart, or clear cart.
+        Enforces server-side validation of availability and pricing.
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+    post:
+      operationId: cart_create
+      description: |-
+        Get customer cart, add item to cart, or clear cart.
+        Enforces server-side validation of availability and pricing.
+      tags:
+      - cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddToCartInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddToCartInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+    delete:
+      operationId: cart_destroy
+      description: |-
+        Get customer cart, add item to cart, or clear cart.
+        Enforces server-side validation of availability and pricing.
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+  /api/cart/items/{item_id}/:
+    delete:
+      operationId: cart_items_destroy
+      description: Remove a specific item from the cart.
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+          description: ''
+  /api/catalog/admin/templates/:
+    get:
+      operationId: catalog_admin_templates_list
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: integer
+      - in: query
+        name: is_featured
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - ARCHIVED
+          - DRAFT
+          - PUBLISHED
+          - UNPUBLISHED
+        description: |-
+          * `DRAFT` - Draft
+          * `PUBLISHED` - Published
+          * `UNPUBLISHED` - Unpublished
+          * `ARCHIVED` - Archived
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminTemplateList'
+          description: ''
+    post:
+      operationId: catalog_admin_templates_create
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+  /api/catalog/admin/templates/{id}/:
+    get:
+      operationId: catalog_admin_templates_retrieve
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+    put:
+      operationId: catalog_admin_templates_update
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+    patch:
+      operationId: catalog_admin_templates_partial_update
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdminTemplateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+    delete:
+      operationId: catalog_admin_templates_destroy
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/admin/templates/{id}/publish/:
+    post:
+      operationId: catalog_admin_templates_publish_create
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+  /api/catalog/admin/templates/{id}/toggle_featured/:
+    post:
+      operationId: catalog_admin_templates_toggle_featured_create
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+  /api/catalog/admin/templates/{id}/unpublish/:
+    post:
+      operationId: catalog_admin_templates_unpublish_create
+      description: Administrative management for all templates (draft, published,
+        unpublished, archived).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTemplate'
+          description: ''
+  /api/catalog/admin/versions/:
+    get:
+      operationId: catalog_admin_versions_list
+      description: Admin management for template release versions.
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: template
+        schema:
+          type: integer
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplateVersionList'
+          description: ''
+    post:
+      operationId: catalog_admin_versions_create
+      description: Admin management for template release versions.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateVersionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateVersionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateVersionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateVersion'
+          description: ''
+  /api/catalog/admin/versions/{id}/:
+    get:
+      operationId: catalog_admin_versions_retrieve
+      description: Admin management for template release versions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template version.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateVersion'
+          description: ''
+    put:
+      operationId: catalog_admin_versions_update
+      description: Admin management for template release versions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template version.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateVersionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateVersionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateVersionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateVersion'
+          description: ''
+    patch:
+      operationId: catalog_admin_versions_partial_update
+      description: Admin management for template release versions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template version.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateVersionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateVersionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateVersionRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateVersion'
+          description: ''
+    delete:
+      operationId: catalog_admin_versions_destroy
+      description: Admin management for template release versions.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template version.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/categories/:
+    get:
+      operationId: catalog_categories_list
+      description: CRUD categories. Public read access; write operations restricted
+        to Admins.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+    post:
+      operationId: catalog_categories_create
+      description: CRUD categories. Public read access; write operations restricted
+        to Admins.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/catalog/categories/{slug}/:
+    get:
+      operationId: catalog_categories_retrieve
+      description: CRUD categories. Public read access; write operations restricted
+        to Admins.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: catalog_categories_update
+      description: CRUD categories. Public read access; write operations restricted
+        to Admins.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: catalog_categories_partial_update
+      description: CRUD categories. Public read access; write operations restricted
+        to Admins.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: catalog_categories_destroy
+      description: CRUD categories. Public read access; write operations restricted
+        to Admins.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/customizations/:
+    get:
+      operationId: catalog_customizations_list
+      description: |-
+        Template customization draft editor workflow for registered customers.
+        Allows customers to save and preview custom configurations (colors, typography, content).
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplateCustomizationList'
+          description: ''
+    post:
+      operationId: catalog_customizations_create
+      description: |-
+        Template customization draft editor workflow for registered customers.
+        Allows customers to save and preview custom configurations (colors, typography, content).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateCustomizationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateCustomizationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateCustomizationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCustomization'
+          description: ''
+  /api/catalog/customizations/{id}/:
+    get:
+      operationId: catalog_customizations_retrieve
+      description: |-
+        Template customization draft editor workflow for registered customers.
+        Allows customers to save and preview custom configurations (colors, typography, content).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template customization.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCustomization'
+          description: ''
+    put:
+      operationId: catalog_customizations_update
+      description: |-
+        Template customization draft editor workflow for registered customers.
+        Allows customers to save and preview custom configurations (colors, typography, content).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template customization.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateCustomizationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateCustomizationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateCustomizationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCustomization'
+          description: ''
+    patch:
+      operationId: catalog_customizations_partial_update
+      description: |-
+        Template customization draft editor workflow for registered customers.
+        Allows customers to save and preview custom configurations (colors, typography, content).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template customization.
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateCustomizationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateCustomizationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplateCustomizationRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCustomization'
+          description: ''
+    delete:
+      operationId: catalog_customizations_destroy
+      description: |-
+        Template customization draft editor workflow for registered customers.
+        Allows customers to save and preview custom configurations (colors, typography, content).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this template customization.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/tags/:
+    get:
+      operationId: catalog_tags_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTagList'
+          description: ''
+    post:
+      operationId: catalog_tags_create
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /api/catalog/tags/{slug}/:
+    get:
+      operationId: catalog_tags_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    put:
+      operationId: catalog_tags_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    patch:
+      operationId: catalog_tags_partial_update
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTagRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTagRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTagRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    delete:
+      operationId: catalog_tags_destroy
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/templates/:
+    get:
+      operationId: catalog_templates_list
+      description: |-
+        Public catalogue of templates.
+        Displays only PUBLISHED templates.
+        Supports filtering by category, price, tags, and searching by keyword.
+      parameters:
+      - in: query
+        name: category__id
+        schema:
+          type: integer
+      - in: query
+        name: category__slug
+        schema:
+          type: string
+      - in: query
+        name: is_featured
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: price
+        schema:
+          type: number
+      - in: query
+        name: price__gte
+        schema:
+          type: number
+      - in: query
+        name: price__lte
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplateListList'
+          description: ''
+  /api/catalog/templates/{slug}/:
+    get:
+      operationId: catalog_templates_retrieve
+      description: |-
+        Public catalogue of templates.
+        Displays only PUBLISHED templates.
+        Supports filtering by category, price, tags, and searching by keyword.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateDetail'
+          description: ''
+  /api/catalog/templates/{slug}/reviews/:
+    get:
+      operationId: catalog_templates_reviews_retrieve
+      description: |-
+        Public catalogue of templates.
+        Displays only PUBLISHED templates.
+        Supports filtering by category, price, tags, and searching by keyword.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateList'
+          description: ''
+    post:
+      operationId: catalog_templates_reviews_create
+      description: |-
+        Public catalogue of templates.
+        Displays only PUBLISHED templates.
+        Supports filtering by category, price, tags, and searching by keyword.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/catalog/wishlist/:
+    get:
+      operationId: catalog_wishlist_list
+      description: Customer saved list / wishlist.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSavedTemplateList'
+          description: ''
+    post:
+      operationId: catalog_wishlist_create
+      description: Customer saved list / wishlist.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavedTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SavedTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SavedTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedTemplate'
+          description: ''
+  /api/catalog/wishlist/{id}/:
+    get:
+      operationId: catalog_wishlist_retrieve
+      description: Customer saved list / wishlist.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this saved template.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedTemplate'
+          description: ''
+    delete:
+      operationId: catalog_wishlist_destroy
+      description: Customer saved list / wishlist.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this saved template.
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/wishlist/toggle/:
+    post:
+      operationId: catalog_wishlist_toggle_create
+      description: Customer saved list / wishlist.
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavedTemplateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SavedTemplateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SavedTemplateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedTemplate'
+          description: ''
+  /api/downloads/admin/logs/:
+    get:
+      operationId: downloads_admin_logs_list
+      description: Administrator view to inspect download activity and audit history.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - downloads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDownloadLogList'
+          description: ''
+  /api/downloads/file/{entitlement_id}/:
+    get:
+      operationId: downloads_file_retrieve
+      description: |-
+        Secure file streaming endpoint.
+        Verifies that the customer has a valid entitlement before serving the file.
+        Does NOT expose public file paths.
+        Logs each download event with timestamp and IP address.
+      parameters:
+      - in: path
+        name: entitlement_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - downloads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/downloads/my-downloads/:
+    get:
+      operationId: downloads_my_downloads_list
+      description: List of purchased templates and download entitlements for the logged-in
+        customer.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - downloads
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDownloadEntitlementList'
+          description: ''
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      description: Health check endpoint for container probes, load balancers, and
+        deployment verification.
+      tags:
+      - health
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/orders/admin/coupons/:
+    get:
+      operationId: orders_admin_coupons_list
+      description: Administrative management for discount and promotional coupon codes.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCouponList'
+          description: ''
+    post:
+      operationId: orders_admin_coupons_create
+      description: Administrative management for discount and promotional coupon codes.
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CouponRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CouponRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+  /api/orders/admin/coupons/{id}/:
+    get:
+      operationId: orders_admin_coupons_retrieve
+      description: Administrative management for discount and promotional coupon codes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this coupon.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+    put:
+      operationId: orders_admin_coupons_update
+      description: Administrative management for discount and promotional coupon codes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this coupon.
+        required: true
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CouponRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CouponRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+    patch:
+      operationId: orders_admin_coupons_partial_update
+      description: Administrative management for discount and promotional coupon codes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this coupon.
+        required: true
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCouponRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCouponRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCouponRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+          description: ''
+    delete:
+      operationId: orders_admin_coupons_destroy
+      description: Administrative management for discount and promotional coupon codes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this coupon.
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/orders/admin/dashboard-summary/:
+    get:
+      operationId: orders_admin_dashboard_summary_retrieve
+      description: Administrative dashboard summary metrics and analytics.
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/orders/admin/orders/:
+    get:
+      operationId: orders_admin_orders_list
+      description: Administrative overview of all orders across the marketplace.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: payment_method
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - CANCELLED
+          - FAILED
+          - PAID
+          - PENDING
+          - REFUNDED
+        description: |-
+          * `PENDING` - Pending Payment
+          * `PAID` - Paid
+          * `FAILED` - Payment Failed
+          * `CANCELLED` - Cancelled
+          * `REFUNDED` - Refunded
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderList'
+          description: ''
+  /api/orders/admin/orders/{order_number}/:
+    get:
+      operationId: orders_admin_orders_retrieve
+      description: Administrative detail view to review or update order status (e.g.
+        handle refunds).
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+    put:
+      operationId: orders_admin_orders_update
+      description: Administrative detail view to review or update order status (e.g.
+        handle refunds).
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+    patch:
+      operationId: orders_admin_orders_partial_update
+      description: Administrative detail view to review or update order status (e.g.
+        handle refunds).
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrderRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrderRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrderRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/orders/apply-coupon/:
+    post:
+      operationId: orders_apply_coupon_create
+      description: Validates a promotional coupon code against the customer's current
+        cart subtotal.
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyCouponRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplyCouponRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplyCouponRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/orders/checkout/:
+    post:
+      operationId: orders_checkout_create
+      description: |-
+        Creates a pending order from the customer's current shopping cart.
+        Validates prices, availability, and promotional coupons on the server.
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/orders/my-orders/:
+    get:
+      operationId: orders_my_orders_list
+      description: List orders belonging to the authenticated customer.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderList'
+          description: ''
+  /api/orders/my-orders/{order_number}/:
+    get:
+      operationId: orders_my_orders_retrieve
+      description: Retrieve order details for the authenticated customer.
+      parameters:
+      - in: path
+        name: order_number
+        schema:
+          type: string
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/orders/verify-payment/:
+    post:
+      operationId: orders_verify_payment_create
+      description: |-
+        Verifies payment completion.
+        Server verifies transaction and idempotently marks order as paid,
+        clearing the cart and unlocking downloadable packages.
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentVerifyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/settings/:
+    get:
+      operationId: settings_retrieve
+      description: |-
+        Retrieve or update global website branding and landing page settings.
+        GET: Public (all visitors).
+        PUT/PATCH: Administrators only.
+      tags:
+      - settings
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteSettings'
+          description: ''
+    put:
+      operationId: settings_update
+      description: |-
+        Retrieve or update global website branding and landing page settings.
+        GET: Public (all visitors).
+        PUT/PATCH: Administrators only.
+      tags:
+      - settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteSettingsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SiteSettingsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SiteSettingsRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteSettings'
+          description: ''
+    patch:
+      operationId: settings_partial_update
+      description: |-
+        Retrieve or update global website branding and landing page settings.
+        GET: Public (all visitors).
+        PUT/PATCH: Administrators only.
+      tags:
+      - settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSiteSettingsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSiteSettingsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSiteSettingsRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteSettings'
+          description: ''
+  /api/settings/upload-logo/:
+    post:
+      operationId: settings_upload_logo_create
+      description: |-
+        Upload a brand logo file (PNG, JPG, SVG, WebP, GIF) to private/public media storage.
+        Automatically assigns the resulting URL to SiteSettings.logo_url.
+      tags:
+      - settings
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoUploadRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoUploadRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoUploadResponse'
+          description: ''
+components:
+  schemas:
+    AddToCartInputRequest:
+      type: object
+      properties:
+        template_id:
+          type: integer
+      required:
+      - template_id
+    AdminTemplate:
+      type: object
+      description: Full template management serializer for administrators.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        short_description:
+          type: string
+          nullable: true
+          maxLength: 300
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 10
+        thumbnail:
+          type: string
+          format: uri
+          nullable: true
+        preview_url:
+          nullable: true
+          description: Live demo or iframe preview link
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        package_file:
+          type: string
+          format: uri
+          nullable: true
+          description: Protected archive file (.zip) unlocked only after verified
+            payment
+        current_version:
+          type: string
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/Status741Enum'
+        is_featured:
+          type: boolean
+        features:
+          description: List of feature bullet points
+        compatibility:
+          type: string
+          maxLength: 255
+        default_config:
+          description: Default customizable settings schema (colors, typography, section
+            contents)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        category:
+          type: integer
+          nullable: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: integer
+      required:
+      - category_name
+      - created_at
+      - created_by
+      - description
+      - id
+      - slug
+      - title
+      - updated_at
+    AdminTemplateRequest:
+      type: object
+      description: Full template management serializer for administrators.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        short_description:
+          type: string
+          nullable: true
+          maxLength: 300
+        description:
+          type: string
+          minLength: 1
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        thumbnail:
+          type: string
+          format: binary
+          nullable: true
+        preview_url:
+          nullable: true
+          description: Live demo or iframe preview link
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        package_file:
+          type: string
+          format: binary
+          nullable: true
+          description: Protected archive file (.zip) unlocked only after verified
+            payment
+        current_version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/Status741Enum'
+        is_featured:
+          type: boolean
+        features:
+          description: List of feature bullet points
+        compatibility:
+          type: string
+          minLength: 1
+          maxLength: 255
+        default_config:
+          description: Default customizable settings schema (colors, typography, section
+            contents)
+        category:
+          type: integer
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: integer
+      required:
+      - description
+      - title
+    AdminUser:
+      type: object
+      description: Serializer for administrator viewing and managing user accounts.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        username:
+          type: string
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        is_verified:
+          type: boolean
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_joined
+      - email
+      - id
+      - last_login
+      - updated_at
+      - username
+    AdminUserRequest:
+      type: object
+      description: Serializer for administrator viewing and managing user accounts.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+        is_verified:
+          type: boolean
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+      required:
+      - email
+      - username
+    ApplyCouponRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+      required:
+      - code
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+        user_email:
+          type: string
+          format: email
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+        entity_type:
+          type: string
+          readOnly: true
+        entity_id:
+          type: string
+          readOnly: true
+        details:
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - created_at
+      - details
+      - entity_id
+      - entity_type
+      - id
+      - ip_address
+      - user
+      - user_email
+    Cart:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+          readOnly: true
+        total_items:
+          type: integer
+          readOnly: true
+        total_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - items
+      - total_items
+      - total_price
+      - updated_at
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        template:
+          allOf:
+          - $ref: '#/components/schemas/TemplateList'
+          readOnly: true
+        price_snapshot:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        current_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        is_available:
+          type: boolean
+          readOnly: true
+        added_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - added_at
+      - current_price
+      - id
+      - is_available
+      - price_snapshot
+      - template
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 120
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+        icon:
+          type: string
+          nullable: true
+          description: Icon identifier or SVG key
+          maxLength: 50
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        template_count:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - name
+      - template_count
+    CategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 120
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+        icon:
+          type: string
+          nullable: true
+          description: Icon identifier or SVG key
+          maxLength: 50
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - name
+    ChangePasswordRequest:
+      type: object
+      description: Serializer for password change requests.
+      properties:
+        old_password:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          minLength: 1
+        new_password_confirm:
+          type: string
+          minLength: 1
+      required:
+      - new_password
+      - new_password_confirm
+      - old_password
+    CheckoutRequest:
+      type: object
+      properties:
+        payment_method:
+          allOf:
+          - $ref: '#/components/schemas/PaymentMethodEnum'
+          default: MOCK
+        coupon_code:
+          type: string
+          default: ''
+    Coupon:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 50
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        min_order_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        max_uses:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total allowed redemptions (null for unlimited)
+        times_used:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        valid_from:
+          type: string
+          format: date-time
+          nullable: true
+        valid_to:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - discount_value
+      - id
+    CouponRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        min_order_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        max_uses:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total allowed redemptions (null for unlimited)
+        times_used:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        valid_from:
+          type: string
+          format: date-time
+          nullable: true
+        valid_to:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - code
+      - discount_value
+    CustomTokenObtainPairRequest:
+      type: object
+      description: Custom JWT serializer that embeds user profile info in response.
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    DiscountTypeEnum:
+      enum:
+      - PERCENTAGE
+      - FIXED
+      type: string
+      description: |-
+        * `PERCENTAGE` - Percentage Discount
+        * `FIXED` - Fixed Amount Discount
+    DownloadEntitlement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        template:
+          allOf:
+          - $ref: '#/components/schemas/TemplateList'
+          readOnly: true
+        order:
+          type: integer
+        version:
+          type: string
+          maxLength: 20
+        max_downloads:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Maximum allowed downloads per purchase (default 20)
+        download_count:
+          type: integer
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Optional expiration date for download access
+        is_active:
+          type: boolean
+        can_download:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        download_url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - can_download
+      - created_at
+      - download_count
+      - download_url
+      - id
+      - order
+      - template
+    DownloadLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        entitlement:
+          type: string
+          format: uuid
+          readOnly: true
+        customer:
+          type: integer
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+        user_agent:
+          type: string
+          readOnly: true
+          nullable: true
+        downloaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - customer
+      - downloaded_at
+      - entitlement
+      - id
+      - ip_address
+      - user_agent
+    LogoUploadRequestRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+      - file
+    LogoUploadResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - url
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        order_number:
+          type: string
+          readOnly: true
+        customer_email:
+          type: string
+          format: email
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatusEnum'
+          readOnly: true
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        discount_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        coupon:
+          allOf:
+          - $ref: '#/components/schemas/Coupon'
+          readOnly: true
+        currency:
+          type: string
+          maxLength: 10
+        payment_method:
+          type: string
+          maxLength: 50
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentTransaction'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - coupon
+      - created_at
+      - customer_email
+      - discount_amount
+      - id
+      - items
+      - order_number
+      - status
+      - total_amount
+      - transactions
+      - updated_at
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        template:
+          allOf:
+          - $ref: '#/components/schemas/TemplateList'
+          readOnly: true
+        template_title:
+          type: string
+          maxLength: 200
+        price_snapshot:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        license_type:
+          type: string
+          maxLength: 50
+      required:
+      - id
+      - price_snapshot
+      - template
+      - template_title
+    OrderItemRequest:
+      type: object
+      properties:
+        template_title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        price_snapshot:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        license_type:
+          type: string
+          minLength: 1
+          maxLength: 50
+      required:
+      - price_snapshot
+      - template_title
+    OrderRequest:
+      type: object
+      properties:
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        payment_method:
+          type: string
+          minLength: 1
+          maxLength: 50
+    OrderStatusEnum:
+      enum:
+      - PENDING
+      - PAID
+      - FAILED
+      - CANCELLED
+      - REFUNDED
+      type: string
+      description: |-
+        * `PENDING` - Pending Payment
+        * `PAID` - Paid
+        * `FAILED` - Payment Failed
+        * `CANCELLED` - Cancelled
+        * `REFUNDED` - Refunded
+    PaginatedAdminTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminTemplate'
+    PaginatedAdminUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUser'
+    PaginatedAuditLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLog'
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedCouponList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
+    PaginatedDownloadEntitlementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownloadEntitlement'
+    PaginatedDownloadLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownloadLog'
+    PaginatedOrderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+    PaginatedSavedTemplateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SavedTemplate'
+    PaginatedTagList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+    PaginatedTemplateCustomizationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateCustomization'
+    PaginatedTemplateListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateList'
+    PaginatedTemplateVersionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateVersion'
+    PasswordResetConfirmRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          minLength: 1
+        new_password_confirm:
+          type: string
+          minLength: 1
+      required:
+      - new_password
+      - new_password_confirm
+      - token
+      - uid
+    PasswordResetRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    PatchedAdminTemplateRequest:
+      type: object
+      description: Full template management serializer for administrators.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        short_description:
+          type: string
+          nullable: true
+          maxLength: 300
+        description:
+          type: string
+          minLength: 1
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        thumbnail:
+          type: string
+          format: binary
+          nullable: true
+        preview_url:
+          nullable: true
+          description: Live demo or iframe preview link
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        package_file:
+          type: string
+          format: binary
+          nullable: true
+          description: Protected archive file (.zip) unlocked only after verified
+            payment
+        current_version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/Status741Enum'
+        is_featured:
+          type: boolean
+        features:
+          description: List of feature bullet points
+        compatibility:
+          type: string
+          minLength: 1
+          maxLength: 255
+        default_config:
+          description: Default customizable settings schema (colors, typography, section
+            contents)
+        category:
+          type: integer
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: integer
+    PatchedAdminUserRequest:
+      type: object
+      description: Serializer for administrator viewing and managing user accounts.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+        is_verified:
+          type: boolean
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+    PatchedCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 120
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+          nullable: true
+        icon:
+          type: string
+          nullable: true
+          description: Icon identifier or SVG key
+          maxLength: 50
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+    PatchedCouponRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        discount_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        min_order_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        max_uses:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+          description: Total allowed redemptions (null for unlimited)
+        times_used:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        valid_from:
+          type: string
+          format: date-time
+          nullable: true
+        valid_to:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+    PatchedOrderRequest:
+      type: object
+      properties:
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        payment_method:
+          type: string
+          minLength: 1
+          maxLength: 50
+    PatchedSiteSettingsRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        company_tagline:
+          type: string
+          minLength: 1
+          maxLength: 200
+        logo_text:
+          type: string
+          minLength: 1
+          maxLength: 50
+        logo_url:
+          type: string
+          description: Custom logo image URL or Base64 data URL
+        logo_icon:
+          type: string
+          minLength: 1
+          description: Preset icon key when no image logo is uploaded
+          maxLength: 50
+        contact_email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        hero_badge:
+          type: string
+          minLength: 1
+          maxLength: 150
+        hero_title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        hero_title_highlight:
+          type: string
+          minLength: 1
+          maxLength: 200
+        hero_subtitle:
+          type: string
+          minLength: 1
+        cta_primary_text:
+          type: string
+          minLength: 1
+          maxLength: 80
+        cta_secondary_text:
+          type: string
+          minLength: 1
+          maxLength: 80
+        metric_1_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_1_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        metric_2_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_2_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        metric_3_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_3_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        metric_4_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_4_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        promo_banner_active:
+          type: boolean
+        promo_banner_title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        promo_banner_text:
+          type: string
+          minLength: 1
+        promo_coupon_code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        footer_description:
+          type: string
+          minLength: 1
+        footer_copyright:
+          type: string
+          minLength: 1
+          maxLength: 200
+    PatchedTagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 60
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+    PatchedTemplateCustomizationRequest:
+      type: object
+      description: Allows customers to edit and save template configurations/drafts.
+      properties:
+        template:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        config_data:
+          description: Customized values for colors, typography, texts, and sections
+        preview_watermarked_url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+    PatchedTemplateVersionRequest:
+      type: object
+      properties:
+        template:
+          type: integer
+        version_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        changelog:
+          type: string
+          nullable: true
+        package_file:
+          type: string
+          format: binary
+        is_active:
+          type: boolean
+    PatchedUserProfileUpdateRequest:
+      type: object
+      description: Serializer for customers updating their own profile.
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+    PaymentMethodEnum:
+      enum:
+      - MOCK
+      - STRIPE
+      - RAZORPAY
+      type: string
+      description: |-
+        * `MOCK` - MOCK
+        * `STRIPE` - STRIPE
+        * `RAZORPAY` - RAZORPAY
+    PaymentTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction_id:
+          type: string
+          maxLength: 120
+        payment_gateway:
+          type: string
+          maxLength: 50
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 10
+        status:
+          $ref: '#/components/schemas/PaymentTransactionStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - amount
+      - created_at
+      - id
+      - transaction_id
+    PaymentTransactionRequest:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+          minLength: 1
+          maxLength: 120
+        payment_gateway:
+          type: string
+          minLength: 1
+          maxLength: 50
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        status:
+          $ref: '#/components/schemas/PaymentTransactionStatusEnum'
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - amount
+      - transaction_id
+    PaymentTransactionStatusEnum:
+      enum:
+      - PENDING
+      - SUCCESS
+      - FAILED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `SUCCESS` - Success
+        * `FAILED` - Failed
+    PaymentVerifyRequest:
+      type: object
+      properties:
+        order_number:
+          type: string
+          minLength: 1
+        transaction_id:
+          type: string
+          minLength: 1
+        provider:
+          type: string
+          minLength: 1
+          default: MOCK
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentVerifyStatusEnum'
+          default: SUCCESS
+        payload:
+          type: object
+          additionalProperties: {}
+      required:
+      - order_number
+      - transaction_id
+    PaymentVerifyStatusEnum:
+      enum:
+      - SUCCESS
+      - FAILED
+      type: string
+      description: |-
+        * `SUCCESS` - SUCCESS
+        * `FAILED` - FAILED
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+          description: Star rating from 1 to 5
+        title:
+          type: string
+          maxLength: 150
+        comment:
+          type: string
+        is_verified_buyer:
+          type: boolean
+          readOnly: true
+        customer_email:
+          type: string
+          format: email
+          readOnly: true
+        customer_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - comment
+      - created_at
+      - customer_email
+      - customer_name
+      - id
+      - is_verified_buyer
+      - rating
+      - title
+    ReviewRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+          description: Star rating from 1 to 5
+        title:
+          type: string
+          minLength: 1
+          maxLength: 150
+        comment:
+          type: string
+          minLength: 1
+      required:
+      - comment
+      - rating
+      - title
+    RoleEnum:
+      enum:
+      - ADMIN
+      - CUSTOMER
+      type: string
+      description: |-
+        * `ADMIN` - Administrator
+        * `CUSTOMER` - Customer
+    SavedTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        template:
+          allOf:
+          - $ref: '#/components/schemas/TemplateList'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - template
+    SavedTemplateRequest:
+      type: object
+      properties:
+        template_id:
+          type: integer
+          writeOnly: true
+      required:
+      - template_id
+    SiteSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 100
+        company_tagline:
+          type: string
+          maxLength: 200
+        logo_text:
+          type: string
+          maxLength: 50
+        logo_url:
+          type: string
+          description: Custom logo image URL or Base64 data URL
+        logo_icon:
+          type: string
+          description: Preset icon key when no image logo is uploaded
+          maxLength: 50
+        contact_email:
+          type: string
+          format: email
+          maxLength: 254
+        hero_badge:
+          type: string
+          maxLength: 150
+        hero_title:
+          type: string
+          maxLength: 200
+        hero_title_highlight:
+          type: string
+          maxLength: 200
+        hero_subtitle:
+          type: string
+        cta_primary_text:
+          type: string
+          maxLength: 80
+        cta_secondary_text:
+          type: string
+          maxLength: 80
+        metric_1_value:
+          type: string
+          maxLength: 50
+        metric_1_label:
+          type: string
+          maxLength: 100
+        metric_2_value:
+          type: string
+          maxLength: 50
+        metric_2_label:
+          type: string
+          maxLength: 100
+        metric_3_value:
+          type: string
+          maxLength: 50
+        metric_3_label:
+          type: string
+          maxLength: 100
+        metric_4_value:
+          type: string
+          maxLength: 50
+        metric_4_label:
+          type: string
+          maxLength: 100
+        promo_banner_active:
+          type: boolean
+        promo_banner_title:
+          type: string
+          maxLength: 200
+        promo_banner_text:
+          type: string
+        promo_coupon_code:
+          type: string
+          maxLength: 50
+        footer_description:
+          type: string
+        footer_copyright:
+          type: string
+          maxLength: 200
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - updated_at
+    SiteSettingsRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        company_tagline:
+          type: string
+          minLength: 1
+          maxLength: 200
+        logo_text:
+          type: string
+          minLength: 1
+          maxLength: 50
+        logo_url:
+          type: string
+          description: Custom logo image URL or Base64 data URL
+        logo_icon:
+          type: string
+          minLength: 1
+          description: Preset icon key when no image logo is uploaded
+          maxLength: 50
+        contact_email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        hero_badge:
+          type: string
+          minLength: 1
+          maxLength: 150
+        hero_title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        hero_title_highlight:
+          type: string
+          minLength: 1
+          maxLength: 200
+        hero_subtitle:
+          type: string
+          minLength: 1
+        cta_primary_text:
+          type: string
+          minLength: 1
+          maxLength: 80
+        cta_secondary_text:
+          type: string
+          minLength: 1
+          maxLength: 80
+        metric_1_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_1_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        metric_2_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_2_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        metric_3_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_3_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        metric_4_value:
+          type: string
+          minLength: 1
+          maxLength: 50
+        metric_4_label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        promo_banner_active:
+          type: boolean
+        promo_banner_title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        promo_banner_text:
+          type: string
+          minLength: 1
+        promo_coupon_code:
+          type: string
+          minLength: 1
+          maxLength: 50
+        footer_description:
+          type: string
+          minLength: 1
+        footer_copyright:
+          type: string
+          minLength: 1
+          maxLength: 200
+    Status741Enum:
+      enum:
+      - DRAFT
+      - PUBLISHED
+      - UNPUBLISHED
+      - ARCHIVED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `PUBLISHED` - Published
+        * `UNPUBLISHED` - Unpublished
+        * `ARCHIVED` - Archived
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 60
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+      required:
+      - id
+      - name
+    TagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 60
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+      required:
+      - name
+    TemplateCustomization:
+      type: object
+      description: Allows customers to edit and save template configurations/drafts.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        template:
+          type: integer
+        template_title:
+          type: string
+          readOnly: true
+        template_thumbnail:
+          type: string
+          format: uri
+          nullable: true
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        config_data:
+          description: Customized values for colors, typography, texts, and sections
+        preview_watermarked_url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        is_purchased:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_purchased
+      - template
+      - template_thumbnail
+      - template_title
+      - updated_at
+    TemplateCustomizationRequest:
+      type: object
+      description: Allows customers to edit and save template configurations/drafts.
+      properties:
+        template:
+          type: integer
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        config_data:
+          description: Customized values for colors, typography, texts, and sections
+        preview_watermarked_url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+      required:
+      - template
+    TemplateDetail:
+      type: object
+      description: 'Detailed view for visitors and customers. Note: package_file is
+        hidden!'
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 220
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        short_description:
+          type: string
+          nullable: true
+          maxLength: 300
+        description:
+          type: string
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 10
+        thumbnail:
+          type: string
+          format: uri
+          nullable: true
+        preview_url:
+          nullable: true
+          description: Live demo or iframe preview link
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        current_version:
+          type: string
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/Status741Enum'
+        is_featured:
+          type: boolean
+        features:
+          description: List of feature bullet points
+        compatibility:
+          type: string
+          maxLength: 255
+        default_config:
+          description: Default customizable settings schema (colors, typography, section
+            contents)
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+        is_saved:
+          type: boolean
+          readOnly: true
+        has_purchased:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - average_rating
+      - category
+      - created_at
+      - description
+      - has_purchased
+      - id
+      - is_saved
+      - review_count
+      - reviews
+      - tags
+      - title
+      - updated_at
+    TemplateList:
+      type: object
+      description: Public template list view for the customer marketplace.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 220
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        short_description:
+          type: string
+          nullable: true
+          maxLength: 300
+        category:
+          allOf:
+          - $ref: '#/components/schemas/Category'
+          readOnly: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 10
+        thumbnail:
+          type: string
+          format: uri
+          nullable: true
+        preview_url:
+          nullable: true
+          description: Live demo or iframe preview link
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        current_version:
+          type: string
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/Status741Enum'
+        is_featured:
+          type: boolean
+        average_rating:
+          type: number
+          format: double
+          readOnly: true
+        review_count:
+          type: integer
+          readOnly: true
+        is_saved:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - average_rating
+      - category
+      - created_at
+      - id
+      - is_saved
+      - review_count
+      - tags
+      - title
+    TemplateListRequest:
+      type: object
+      description: Public template list view for the customer marketplace.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 220
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        short_description:
+          type: string
+          nullable: true
+          maxLength: 300
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          minLength: 1
+          maxLength: 10
+        thumbnail:
+          type: string
+          format: binary
+          nullable: true
+        preview_url:
+          nullable: true
+          description: Live demo or iframe preview link
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        current_version:
+          type: string
+          minLength: 1
+          maxLength: 20
+        status:
+          $ref: '#/components/schemas/Status741Enum'
+        is_featured:
+          type: boolean
+      required:
+      - title
+    TemplateVersion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        template:
+          type: integer
+        version_number:
+          type: string
+          maxLength: 20
+        changelog:
+          type: string
+          nullable: true
+        package_file:
+          type: string
+          format: uri
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - package_file
+      - template
+      - version_number
+    TemplateVersionRequest:
+      type: object
+      properties:
+        template:
+          type: integer
+        version_number:
+          type: string
+          minLength: 1
+          maxLength: 20
+        changelog:
+          type: string
+          nullable: true
+        package_file:
+          type: string
+          format: binary
+        is_active:
+          type: boolean
+      required:
+      - package_file
+      - template
+      - version_number
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    User:
+      type: object
+      description: General representation of a User object.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        username:
+          type: string
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        is_verified:
+          type: boolean
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - is_active
+      - is_verified
+      - role
+      - updated_at
+      - username
+    UserProfileUpdate:
+      type: object
+      description: Serializer for customers updating their own profile.
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+    UserProfileUpdateRequest:
+      type: object
+      description: Serializer for customers updating their own profile.
+      properties:
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          maxLength: 30
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+    UserRegistration:
+      type: object
+      description: Customer registration serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        username:
+          type: string
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - email
+      - id
+      - username
+    UserRegistrationRequest:
+      type: object
+      description: Customer registration serializer.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          title: Email address
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password_confirm:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+      - password_confirm
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
